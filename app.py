@@ -92,13 +92,15 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-# Add CORS middleware
+# Add CORS middleware with more permissive settings for Coolify
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Configure this properly for production
+    allow_origins=["*"],  # Allow all origins for Coolify
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "PATCH"],
     allow_headers=["*"],
+    expose_headers=["*"],
+    max_age=86400,  # Cache preflight requests for 24 hours
 )
 
 class ParaphraseRequest(BaseModel):
@@ -257,6 +259,21 @@ async def batch_paraphrase_texts(requests: List[ParaphraseRequest]):
     except Exception as e:
         logger.error(f"Batch paraphrase error: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
+
+# Add OPTIONS handler for CORS preflight requests
+@app.options("/{path:path}")
+async def options_handler(path: str):
+    """Handle OPTIONS requests for CORS"""
+    return JSONResponse(
+        status_code=200,
+        content={"message": "OK"},
+        headers={
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS, HEAD, PATCH",
+            "Access-Control-Allow-Headers": "*",
+            "Access-Control-Max-Age": "86400"
+        }
+    )
 
 @app.exception_handler(Exception)
 async def global_exception_handler(request, exc):
