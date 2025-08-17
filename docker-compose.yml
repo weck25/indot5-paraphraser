@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  indot5-paraphraser:
+    build: .
+    container_name: indot5-paraphraser
+    ports:
+      - "5005:5005"
+    environment:
+      - PORT=5005
+      - HOST=0.0.0.0
+      - PYTHONUNBUFFERED=1
+    volumes:
+      # Optional: Mount model cache directory for faster restarts
+      - model_cache:/root/.cache/huggingface
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5005/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    deploy:
+      resources:
+        limits:
+          memory: 4G
+        reservations:
+          memory: 2G
+    networks:
+      - indot5-network
+
+volumes:
+  model_cache:
+
+networks:
+  indot5-network:
+    driver: bridge
