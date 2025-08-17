@@ -1,11 +1,12 @@
 # IndoT5 Paraphraser API
 
-Indonesian text paraphrasing service menggunakan model IndoT5 yang dioptimalkan untuk bahasa Indonesia.
+Indonesian text paraphrasing service menggunakan model [Wikidepia/IndoT5-base-paraphrase](https://huggingface.co/Wikidepia/IndoT5-base-paraphrase) yang dioptimalkan untuk paraphrasing bahasa Indonesia.
 
 ## 🚀 Fitur
 
-- **Multi-style paraphrasing**: friendly, formal, casual, default
+- **High-quality paraphrasing**: Menggunakan model IndoT5 yang dilatih khusus untuk paraphrasing
 - **Batch processing**: Paraphrase multiple texts sekaligus
+- **Multiple variations**: Generate hingga 5 variasi paraphrase
 - **Health monitoring**: Built-in health checks
 - **Docker support**: Easy deployment dengan Docker
 - **RESTful API**: FastAPI dengan dokumentasi otomatis
@@ -98,7 +99,7 @@ Response:
 ```json
 {
   "status": "healthy",
-  "model_loaded": true,
+  "is_model_loaded": true,
   "device": "cpu",
   "uptime": 1234.56
 }
@@ -110,23 +111,24 @@ POST /paraphrase
 Content-Type: application/json
 
 {
-  "text": "Saya ingin membeli produk ini",
-  "style": "friendly",
-  "max_length": 128
+  "text": "Anak anak melakukan piket kelas agar kebersihan kelas terjaga",
+  "max_length": 512,
+  "num_return_sequences": 1
 }
 ```
 
 Response:
 ```json
 {
-  "result": "Aku mau beli produk yang ini",
-  "original_text": "Saya ingin membeli produk ini",
-  "style": "friendly",
-  "processing_time": 0.85,
-  "model_info": {
-    "model": "cahya/indot5-base-paraphrase",
+  "result": "Para siswa melaksanakan tugas piket untuk menjaga kebersihan ruangan",
+  "original_text": "Anak anak melakukan piket kelas agar kebersihan kelas terjaga",
+  "style": "default",
+  "processing_time": 1.25,
+  "model_details": {
+    "model": "Wikidepia/IndoT5-base-paraphrase",
     "device": "cpu",
-    "max_length": 128
+    "max_length": 512,
+    "num_return_sequences": 1
   }
 }
 ```
@@ -138,22 +140,29 @@ Content-Type: application/json
 
 [
   {
-    "text": "Saya ingin membeli produk ini",
-    "style": "friendly"
+    "text": "Anak anak melakukan piket kelas agar kebersihan kelas terjaga",
+    "max_length": 512
   },
   {
     "text": "Terima kasih atas bantuannya",
-    "style": "formal"
+    "max_length": 512
   }
 ]
 ```
 
-### Style Options
+### Model Information
 
-- **friendly**: Gaya ramah dan santai
-- **formal**: Gaya formal dan sopan  
-- **casual**: Gaya santai dan informal
-- **default**: Gaya standar
+Model ini menggunakan format input khusus:
+- **Input format**: `"paraphrase: " + text + " </s>"`
+- **Training**: Dilatih pada dataset PAWS yang diterjemahkan ke bahasa Indonesia
+- **Capabilities**: Generate paraphrase yang natural dan kontekstual
+
+### Parameters
+
+- **text**: Teks yang akan diparafrase (required)
+- **max_length**: Panjang maksimum output (default: 512, max: 512)
+- **num_return_sequences**: Jumlah variasi paraphrase (default: 1, max: 5)
+- **style**: Tidak digunakan (model tidak mendukung style variations)
 
 ## 🔍 Monitoring
 
@@ -198,7 +207,7 @@ curl http://localhost:5005/health
 # Test paraphrase endpoint
 curl -X POST http://localhost:5005/paraphrase \
   -H "Content-Type: application/json" \
-  -d '{"text": "Halo, bagaimana kabar Anda?", "style": "friendly"}'
+  -d '{"text": "Anak anak melakukan piket kelas agar kebersihan kelas terjaga"}'
 ```
 
 ## 🔧 Troubleshooting
@@ -255,8 +264,8 @@ curl -X POST http://localhost:5005/paraphrase \
 
 - **Model Size**: ~850MB
 - **Memory Usage**: ~2-4GB
-- **Response Time**: 0.5-2 seconds (CPU)
-- **Throughput**: ~10-20 requests/second (CPU)
+- **Response Time**: 1-3 seconds (CPU)
+- **Throughput**: ~5-10 requests/second (CPU)
 
 ## 🔒 Security
 
@@ -281,6 +290,9 @@ MIT License
 
 Untuk bantuan dan pertanyaan:
 - Create issue di repository
-- Email: wiliamrifqi@gmail.com
-- Telegram: @0xboomtu
+- Email: support@example.com
 - Documentation: `/docs` (Swagger UI)
+
+## 🙏 Acknowledgement
+
+Model ini menggunakan [Wikidepia/IndoT5-base-paraphrase](https://huggingface.co/Wikidepia/IndoT5-base-paraphrase) yang dilatih pada dataset PAWS yang diterjemahkan ke bahasa Indonesia. Terima kasih kepada Tensorflow Research Cloud untuk menyediakan TPU v3-8s untuk training.
